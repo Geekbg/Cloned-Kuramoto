@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- saved from url=(0036)http://ruthcfong.github.io/kuramoto/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Kuramoto Model Simulation</title>        
+        <link href="./Kuramoto Model Simulation_files/edit.css" rel="stylesheet" type="text/css">
+        <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="scripts/float/excanvas.min.js"></script><![endif]-->
+        <script language="javascript" type="text/javascript" src="./Kuramoto Model Simulation_files/jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="./Kuramoto Model Simulation_files/jquery.flot.js"></script>
+        <script language="javascript" type="text/javascript" src="./Kuramoto Model Simulation_files/jquery.flot.axislabels.js"></script>
+        <script type="text/javascript" src="./Kuramoto Model Simulation_files/duplicate.js"></script>
+    </head>
+    <body>
+        <header>
+          <img src="https://www.ndcn.ox.ac.uk/images/logos/primary-logo" id="Logo">
+          <br><br>
+          <h2 class="Title">Kuramoto Model Simulation</h2>
+          <h3 class="Score">HighScore: <p id="HS" value="null"></p></h3>
+        </header>
+        <div id="IMPORTANT">
+
+            <div id="optionList">
+            <p>
+              K =
+              <input id="K" value="1.89753" type="number" min="0" step="1">
+            </p>
+            <p>
+              Noise Strength = 
+                <input id="noise_strength" value="0.5" type="number" min="0" step=".3"> <!-- "2.66466" -->
+            </p>
+            <p>
+              DBS Strength = 
+                <input id="dbs_strength" value=".5" type="number" min="0" step=".1">
+            </p>
+            <p>
+              No. of oscillators = 
+                <input id="num_nodes" value="10" type="number" step="5">
+            </p>
+            <p>
+              Mean of oscillator frequency (in radians) = 
+                <input id="w_mean" value="32.3319" type="number" step="1.0">
+              Standard Deviation of oscillator frequency (in radians) = 
+                <input id="w_std" value="2.5804" type="number" step="0.05">
+            </p>
+            <p>
+              Sampling Frequency (in Hz) = 
+                <input id="sampling_freq" value="2048" type="number">
+              Pulse Frequency (in Hz) =
+                <input id="pulse_freq" value="130" type="number">
+            </p>
+            <p>
+              <b>For auto-stimulate only: </b>
+              # of Pulses (for autostimulate) = 
+                <input id="num_pulses" value="6" type="number" disabled="">
+              Phase to stimulate at (in radians) = 
+                <input id="phase_to_stim" value="0" type="number" step="0.5235" disabled=""> 
+            </p>
+            <p>
+              <b>Stimulation options: </b>
+              <input type="radio" id="stim_option_uniform" name="stim_option" value="uniform" checked="">Uniform 
+              <input type="radio" id="stim_option_half" name="stim_option" value="half">Half  
+              <input type="radio" id="stim_option_random" name="stim_option" value="random">Random 
+              <input type="radio" id="stim_option_half_and_random" name="stim_option" value="half_and_random">Half &amp; Random
+            </p>
+            </div>
+            
+            
+            <p>
+                <button id="reset">reset</button>
+                <button id="stimulate">stimulate</button>
+                <button id="play">play game</button>
+                <button id="optionButton" onclick="disappear()">dev</button>
+                <input type="checkbox" id="autostimulate" name="autostimulate" value="autostimulate">auto-stimulate<br>
+            </p>
+        </div>
+        <!--<p id="is_stimulated">Is Stimulated? false</p>-->
+        <p id="play_text">Time left: <span id="time">N/A</span></p>
+        <p id="iterations"></p>
+        <!--<p id="r"></p>
+        <input id="r_value" value="0.0">
+        <input id="cos_value" value="0.0">
+        <p id="psi"></p>
+        <p id="converge">Hasn't converged yet...</p>-->
+        <p>Update Rule:</p>
+        <p><img src="./Kuramoto Model Simulation_files/update_rule.png" align="bottom"></p> <!-- \theta_i = \theta_i + dt(w_i + K r \sin(\psi - \theta_i)) + \alpha \mathcal{N}(0, \sqrt{dt}) + \beta z(\theta_i) u(t), \text{ where } z(\theta_i) = -\sin(\theta_i) -->
+        <img src="./Kuramoto Model Simulation_files/dbs_patient.jpg" alt="DBS Setup" id="dbs_patient" hidden="">
+        <img src="./Kuramoto Model Simulation_files/lightning_bolt.png" alt="Lightning Bolt" id="lightning_bolt" hidden="">
+        <div class="left-col">
+            <canvas id="canvas_oscillator" width="600" height="300"></canvas>
+        </div>
+        <div class="center-col">
+            <div class="demo-container">
+                <div id="r_graph" class="demo-placeholder" style="padding: 0px; position: relative;"><canvas class="flot-base" width="536" height="526" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 268px; height: 263px;"></canvas><div class="flot-text" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; font-size: smaller; color: rgb(84, 84, 84);"><div class="flot-x-axis flot-x1-axis xAxis x1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;"><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 38px; text-align: center;">0</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 78px; text-align: center;">20</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 122px; text-align: center;">40</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 166px; text-align: center;">60</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 210px; text-align: center;">80</div></div><div class="flot-y-axis flot-y1-axis yAxis y1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;"><div class="flot-tick-label tickLabel" style="position: absolute; top: 214px; left: 20px; text-align: right;">0.0</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 171px; left: 20px; text-align: right;">0.2</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 128px; left: 20px; text-align: right;">0.4</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 86px; left: 20px; text-align: right;">0.6</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 43px; left: 20px; text-align: right;">0.8</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 0px; left: 20px; text-align: right;">1.0</div></div></div><canvas class="flot-overlay" width="536" height="526" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 268px; height: 263px;"></canvas><div class="axisLabels xaxisLabel" style="position:absolute; top: 0; left: 0; -moz-transform: translate(134px, 245px);-webkit-transform: translate(134px, 245px);-o-transform: translate(134px, 245px);-ms-transform: translate(134px, 245px);;">Time</div><div class="axisLabels yaxisLabel" style="position:absolute; top: 0; left: 0; -moz-transform: translate(-33px, 115px) rotate(-90deg);-webkit-transform: translate(-33px, 115px) rotate(-90deg);-o-transform: translate(-33px, 115px) rotate(-90deg);-ms-transform: translate(-33px, 115px) rotate(-90deg);;">Coherence (r)</div></div>
+            </div>
+        </div>
+        <div class="right-col">
+            <div class="demo-container">
+                <div id="cos_graph" class="demo-placeholder" style="padding: 0px; position: relative;"><canvas class="flot-base" width="536" height="526" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 268px; height: 263px;"></canvas><div class="flot-text" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; font-size: smaller; color: rgb(84, 84, 84);"><div class="flot-x-axis flot-x1-axis xAxis x1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;"><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 42px; text-align: center;">0</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 82px; text-align: center;">20</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 125px; text-align: center;">40</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 168px; text-align: center;">60</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 44px; top: 227px; left: 211px; text-align: center;">80</div></div><div class="flot-y-axis flot-y1-axis yAxis y1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;"><div class="flot-tick-label tickLabel" style="position: absolute; top: 214px; left: 20px; text-align: right;">-1.0</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 161px; left: 20px; text-align: right;">-0.5</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 107px; left: 24px; text-align: right;">0.0</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 54px; left: 24px; text-align: right;">0.5</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 0px; left: 24px; text-align: right;">1.0</div></div></div><canvas class="flot-overlay" width="536" height="526" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 268px; height: 263px;"></canvas><div class="axisLabels xaxisLabel" style="position:absolute; top: 0; left: 0; -moz-transform: translate(136px, 245px);-webkit-transform: translate(136px, 245px);-o-transform: translate(136px, 245px);-ms-transform: translate(136px, 245px);;">Time</div><div class="axisLabels yaxisLabel" style="position:absolute; top: 0; left: 0; -moz-transform: translate(-74px, 115px) rotate(-90deg);-webkit-transform: translate(-74px, 115px) rotate(-90deg);-o-transform: translate(-74px, 115px) rotate(-90deg);-ms-transform: translate(-74px, 115px) rotate(-90deg);;">Tremor (avg cos[oscillator])</div></div>
+            </div>
+        </div>
+        <div class="last-col" hidden="">
+            <div class="demo-container">
+                <div id="phase_graph" class="demo-placeholder" style="padding: 0px; position: relative;"><canvas class="flot-base" width="200" height="200" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 100px; height: 100px;"></canvas><div class="flot-text" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; font-size: smaller; color: rgb(84, 84, 84);"><div class="flot-x-axis flot-x1-axis xAxis x1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;"><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 33px; top: 96px; left: 9px; text-align: center;">0</div><div class="flot-tick-label tickLabel" style="position: absolute; max-width: 33px; top: 96px; left: 51px; text-align: center;">50</div></div><div class="flot-y-axis flot-y1-axis yAxis y1Axis" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px; display: block;"><div class="flot-tick-label tickLabel" style="position: absolute; top: 91px; left: 4px; text-align: right;">0</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 65px; left: 4px; text-align: right;">2</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 38px; left: 4px; text-align: right;">4</div><div class="flot-tick-label tickLabel" style="position: absolute; top: 12px; left: 4px; text-align: right;">6</div></div></div><canvas class="flot-overlay" width="200" height="200" style="direction: ltr; position: absolute; left: 0px; top: 0px; width: 100px; height: 100px;"></canvas><div class="axisLabels xaxisLabel" style="position:absolute; top: 0; left: 0; -moz-transform: translate(51px, 98px);-webkit-transform: translate(51px, 98px);-o-transform: translate(51px, 98px);-ms-transform: translate(51px, 98px);;">Time</div><div class="axisLabels yaxisLabel" style="position:absolute; top: 0; left: 0; -moz-transform: translate(2px, 50px) rotate(-90deg);-webkit-transform: translate(2px, 50px) rotate(-90deg);-o-transform: translate(2px, 50px) rotate(-90deg);-ms-transform: translate(2px, 50px) rotate(-90deg);;">Phase (in radians)</div></div>
+            </div>
+        </div>
+    
+</body></html>
